@@ -122,9 +122,9 @@ static EHardwareFeature GetRequiredFeatures()
 	}
 
 	const TCHAR* PluginSection = TEXT("/Script/EstDxgiStats.EstDxgiCheck");
-	int32 SimulateFailure = 0;
-	GConfig->GetInt(PluginSection, TEXT("SimulateFailure"), SimulateFailure, GEngineIni);
-	if (SimulateFailure > 0)
+	bool SimulateFailure = 0;
+	GConfig->GetBool(PluginSection, TEXT("SimulateFailure"), SimulateFailure, GEngineIni);
+	if (SimulateFailure)
 	{
 		Required |= EHardwareFeature::SimulatedFailure;
 	}

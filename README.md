@@ -22,10 +22,10 @@ Add to your `DefaultEngine.ini` to customise the error dialog:
 
 ```ini
 [/Script/EstDxgiStats.EstDxgiCheck]
-ProblemMessage=Your graphics card doesn't support the required features for this game.
-QuestionMessage=Would you like to learn more?
-ErrorTitle=Incompatible Hardware
-HelpURL=https://yourgame.com/system-requirements
+ProblemMessage="Your graphics card doesn't support the required features for this game."
+QuestionMessage="Would you like to learn more?"
+ErrorTitle="Incompatible Hardware"
+HelpURL="https://yourgame.com/system-requirements"
 ```
 
 The help URL receives query parameters indicating which features are missing (e.g. `?missing=atomic64&missing=sm66`), so you can show relevant troubleshooting info.
