@@ -22,7 +22,8 @@ Add to your `DefaultEngine.ini` to customise the error dialog:
 
 ```ini
 [/Script/EstDxgiStats.EstDxgiCheck]
-ErrorMessage=Your graphics card doesn't support the required features for this game.
+ProblemMessage=Your graphics card doesn't support the required features for this game.
+QuestionMessage=Would you like to learn more?
 ErrorTitle=Incompatible Hardware
 HelpURL=https://yourgame.com/system-requirements
 ```

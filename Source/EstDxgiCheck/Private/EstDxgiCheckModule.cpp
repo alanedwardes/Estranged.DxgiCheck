@@ -166,19 +166,19 @@ static const TCHAR* GetFeatureId(EHardwareFeature Feature)
 
 static void ShowErrorAndExit(EHardwareFeature Detected, EHardwareFeature Required)
 {
-	FString ErrorMessage = TEXT("Your graphics card does not support the required features for this game.\n\nPlease update your drivers or use a compatible GPU.\n\nWould you like to learn more?");
+	FString ProblemMessage = TEXT("Your graphics card does not support the required features for this game.");
+	FString QuestionMessage = TEXT("Would you like to learn more?");
 	FString ErrorTitle = TEXT("Incompatible Hardware");
 	FString HelpURL = TEXT("https://example.com/");
 
 	if (GConfig)
 	{
 		const TCHAR* Section = TEXT("/Script/EstDxgiStats.EstDxgiCheck");
-		GConfig->GetString(Section, TEXT("ErrorMessage"), ErrorMessage, GEngineIni);
+		GConfig->GetString(Section, TEXT("ProblemMessage"), ProblemMessage, GEngineIni);
+		GConfig->GetString(Section, TEXT("QuestionMessage"), QuestionMessage, GEngineIni);
 		GConfig->GetString(Section, TEXT("ErrorTitle"), ErrorTitle, GEngineIni);
 		GConfig->GetString(Section, TEXT("HelpURL"), HelpURL, GEngineIni);
 	}
-
-	ErrorMessage = ErrorMessage.Replace(TEXT("\\n"), TEXT("\n"));
 
 	FString MissingList;
 	FString QueryParams;
@@ -194,7 +194,7 @@ static void ShowErrorAndExit(EHardwareFeature Detected, EHardwareFeature Require
 		}
 	}
 
-	FString FinalMessage = FString::Printf(TEXT("%s\n\nMissing Features:%s"), *ErrorMessage, *MissingList);
+	FString FinalMessage = FString::Printf(TEXT("%s\n\nMissing Features:%s\n\n%s"), *ProblemMessage, *MissingList, *QuestionMessage);
 	EAppReturnType::Type Result = FPlatformMisc::MessageBoxExt(EAppMsgType::YesNo, *FinalMessage, *ErrorTitle);
 	
 	if (Result == EAppReturnType::Yes && !HelpURL.IsEmpty())
