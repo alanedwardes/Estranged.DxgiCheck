@@ -22,7 +22,8 @@ enum class EHardwareFeature : uint32
 	RayTracing = 1 << 4,
 	MeshShaders = 1 << 5,
 	VRS = 1 << 6,
-	Max = 1 << 7,
+	SimulatedFailure = 1 << 7,
+	Max = 1 << 8,
 };
 
 ENUM_CLASS_FLAGS(EHardwareFeature);
@@ -120,6 +121,14 @@ static EHardwareFeature GetRequiredFeatures()
 		Required |= EHardwareFeature::RayTracing;
 	}
 
+	const TCHAR* PluginSection = TEXT("/Script/EstDxgiStats.EstDxgiCheck");
+	int32 SimulateFailure = 0;
+	GConfig->GetInt(PluginSection, TEXT("SimulateFailure"), SimulateFailure, GEngineIni);
+	if (SimulateFailure > 0)
+	{
+		Required |= EHardwareFeature::SimulatedFailure;
+	}
+
 	return Required;
 }
 
@@ -134,6 +143,7 @@ static const TCHAR* GetFeatureName(EHardwareFeature Feature)
 		case EHardwareFeature::RayTracing: return TEXT("DirectX 12 Ray Tracing (Tier 1.1)");
 		case EHardwareFeature::MeshShaders: return TEXT("DirectX 12 Mesh Shaders");
 		case EHardwareFeature::VRS: return TEXT("DirectX 12 Variable Rate Shading (Tier 2)");
+		case EHardwareFeature::SimulatedFailure: return TEXT("Simulated Failure (Development)");
 		default: return TEXT("Unknown");
 	}
 }
@@ -149,6 +159,7 @@ static const TCHAR* GetFeatureId(EHardwareFeature Feature)
 		case EHardwareFeature::RayTracing: return TEXT("raytracing");
 		case EHardwareFeature::MeshShaders: return TEXT("meshshaders");
 		case EHardwareFeature::VRS: return TEXT("vrs");
+		case EHardwareFeature::SimulatedFailure: return TEXT("simulated");
 		default: return TEXT("unknown");
 	}
 }
@@ -166,6 +177,8 @@ static void ShowErrorAndExit(EHardwareFeature Detected, EHardwareFeature Require
 		GConfig->GetString(Section, TEXT("ErrorTitle"), ErrorTitle, GEngineIni);
 		GConfig->GetString(Section, TEXT("HelpURL"), HelpURL, GEngineIni);
 	}
+
+	ErrorMessage = ErrorMessage.Replace(TEXT("\\n"), TEXT("\n"));
 
 	FString MissingList;
 	FString QueryParams;
@@ -187,8 +200,7 @@ static void ShowErrorAndExit(EHardwareFeature Detected, EHardwareFeature Require
 	if (Result == EAppReturnType::Yes && !HelpURL.IsEmpty())
 	{
 		FString FinalURL = HelpURL + QueryParams;
-		FString ErrorString;
-		FPlatformProcess::LaunchURL(*FinalURL, nullptr, &ErrorString);
+		FPlatformProcess::LaunchURL(*FinalURL, nullptr, nullptr);
 	}
 
 	FPlatformMisc::RequestExit(true, TEXT("EstDxgiCheck.RequiredFeaturesMissing"));
