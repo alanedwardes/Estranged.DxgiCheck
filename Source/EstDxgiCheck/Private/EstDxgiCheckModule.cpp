@@ -134,7 +134,22 @@ static const TCHAR* GetFeatureName(EHardwareFeature Feature)
 		case EHardwareFeature::RayTracing: return TEXT("DirectX 12 Ray Tracing (Tier 1.1)");
 		case EHardwareFeature::MeshShaders: return TEXT("DirectX 12 Mesh Shaders");
 		case EHardwareFeature::VRS: return TEXT("DirectX 12 Variable Rate Shading (Tier 2)");
-		default: return TEXT("Unknown Feature");
+		default: return TEXT("Unknown");
+	}
+}
+
+static const TCHAR* GetFeatureId(EHardwareFeature Feature)
+{
+	switch (Feature)
+	{
+		case EHardwareFeature::DX12: return TEXT("dx12");
+		case EHardwareFeature::Atomic64: return TEXT("atomic64");
+		case EHardwareFeature::WaveOps: return TEXT("waveops");
+		case EHardwareFeature::SM66: return TEXT("sm66");
+		case EHardwareFeature::RayTracing: return TEXT("raytracing");
+		case EHardwareFeature::MeshShaders: return TEXT("meshshaders");
+		case EHardwareFeature::VRS: return TEXT("vrs");
+		default: return TEXT("unknown");
 	}
 }
 
@@ -162,7 +177,7 @@ static void ShowErrorAndExit(EHardwareFeature Detected, EHardwareFeature Require
 		{
 			MissingList += FString::Printf(TEXT("\n\u2022 %s"), GetFeatureName(Feature));
 			QueryParams += QueryParams.IsEmpty() ? TEXT("?") : TEXT("&");
-			QueryParams += FString::Printf(TEXT("missing=%d"), Bit);
+			QueryParams += FString::Printf(TEXT("missing=%s"), GetFeatureId(Feature));
 		}
 	}
 
