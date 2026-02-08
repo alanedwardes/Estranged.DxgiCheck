@@ -121,13 +121,15 @@ static EHardwareFeature GetRequiredFeatures()
 		Required |= EHardwareFeature::RayTracing;
 	}
 
+#if !UE_BUILD_SHIPPING
 	const TCHAR* PluginSection = TEXT("/Script/EstDxgiStats.EstDxgiCheck");
-	bool SimulateFailure = 0;
+	bool SimulateFailure = false;
 	GConfig->GetBool(PluginSection, TEXT("SimulateFailure"), SimulateFailure, GEngineIni);
 	if (SimulateFailure)
 	{
 		Required |= EHardwareFeature::SimulatedFailure;
 	}
+#endif
 
 	return Required;
 }
