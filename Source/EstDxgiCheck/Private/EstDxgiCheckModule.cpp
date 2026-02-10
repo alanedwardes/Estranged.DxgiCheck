@@ -4,11 +4,11 @@
 #include "Misc/App.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformMisc.h"
-
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include <d3d12.h>
 #include <dxgi1_6.h>
-#include "Windows/HideWindowsPlatformTypes.h"
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
 
 IMPLEMENT_MODULE(FEstDxgiCheckModule, EstDxgiCheck)
 
@@ -166,12 +166,29 @@ static const TCHAR* GetFeatureId(EHardwareFeature Feature)
 	}
 }
 
+static FString AppendQuery(const FString& BaseURL, const FString& Query)
+{
+	if (Query.IsEmpty())
+	{
+		return BaseURL;
+	}
+
+	FString Suffix = Query;
+	if (BaseURL.Contains(TEXT("?")) && Suffix.StartsWith(TEXT("?")))
+	{
+		Suffix[0] = '&';
+	}
+	
+	return BaseURL + Suffix;
+}
+
 static void ShowErrorAndExit(EHardwareFeature Detected, EHardwareFeature Required)
 {
 	FString ProblemMessage = TEXT("Your graphics card does not support the required features for this game.");
 	FString QuestionMessage = TEXT("Would you like to learn more?");
 	FString ErrorTitle = TEXT("Incompatible Hardware");
 	FString HelpURL = TEXT("https://example.com/");
+	FString StatsEndpoint;
 
 	if (GConfig)
 	{
@@ -180,6 +197,7 @@ static void ShowErrorAndExit(EHardwareFeature Detected, EHardwareFeature Require
 		GConfig->GetString(Section, TEXT("QuestionMessage"), QuestionMessage, GEngineIni);
 		GConfig->GetString(Section, TEXT("ErrorTitle"), ErrorTitle, GEngineIni);
 		GConfig->GetString(Section, TEXT("HelpURL"), HelpURL, GEngineIni);
+		GConfig->GetString(Section, TEXT("StatsEndpoint"), StatsEndpoint, GEngineIni);
 	}
 
 	FString MissingList;
@@ -196,12 +214,23 @@ static void ShowErrorAndExit(EHardwareFeature Detected, EHardwareFeature Require
 		}
 	}
 
+	if (!StatsEndpoint.IsEmpty())
+	{
+		FString FinalStatsURL = AppendQuery(StatsEndpoint, QueryParams);
+
+		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+		Request->SetVerb(TEXT("GET"));
+		Request->SetURL(FinalStatsURL);
+		Request->SetTimeout(2.0f);
+		Request->ProcessRequest();
+	}
+
 	FString FinalMessage = FString::Printf(TEXT("%s\n\nMissing Features:%s\n\n%s"), *ProblemMessage, *MissingList, *QuestionMessage);
 	EAppReturnType::Type Result = FPlatformMisc::MessageBoxExt(EAppMsgType::YesNo, *FinalMessage, *ErrorTitle);
 	
 	if (Result == EAppReturnType::Yes && !HelpURL.IsEmpty())
 	{
-		FString FinalURL = HelpURL + QueryParams;
+		FString FinalURL = AppendQuery(HelpURL, QueryParams);
 		FPlatformProcess::LaunchURL(*FinalURL, nullptr, nullptr);
 	}
 

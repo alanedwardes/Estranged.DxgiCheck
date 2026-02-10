@@ -6,7 +6,7 @@ public class EstDxgiCheck : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PrivateDependencyModuleNames.AddRange(new string[] { "Core", "Projects" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "Core", "Projects", "HTTP" });
 
         if (Target.IsInPlatformGroup(UnrealPlatformGroup.Windows))
         {
