@@ -9,6 +9,8 @@
 #include <dxgi1_6.h>
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
+#include "Misc/Paths.h"
+#include "HAL/PlatformFileManager.h"
 
 IMPLEMENT_MODULE(FEstDxgiCheckModule, EstDxgiCheck)
 
@@ -216,13 +218,17 @@ static void ShowErrorAndExit(EHardwareFeature Detected, EHardwareFeature Require
 
 	if (!StatsEndpoint.IsEmpty())
 	{
-		FString FinalStatsURL = AppendQuery(StatsEndpoint, QueryParams);
+		const FString OptOutPath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("NoTelemetry.txt"));
+		if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*OptOutPath))
+		{
+			FString FinalStatsURL = AppendQuery(StatsEndpoint, QueryParams);
 
-		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
-		Request->SetVerb(TEXT("GET"));
-		Request->SetURL(FinalStatsURL);
-		Request->SetTimeout(2.0f);
-		Request->ProcessRequest();
+			TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+			Request->SetVerb(TEXT("GET"));
+			Request->SetURL(FinalStatsURL);
+			Request->SetTimeout(2.0f);
+			Request->ProcessRequest();
+		}
 	}
 
 	FString FinalMessage = FString::Printf(TEXT("%s\n\nMissing Features:%s\n\n%s"), *ProblemMessage, *MissingList, *QuestionMessage);
