@@ -11,6 +11,7 @@
 #include "Interfaces/IHttpRequest.h"
 #include "Misc/Paths.h"
 #include "HAL/PlatformFileManager.h"
+#include "GenericPlatform/GenericPlatformFile.h"
 
 IMPLEMENT_MODULE(FEstDxgiCheckModule, EstDxgiCheck)
 
